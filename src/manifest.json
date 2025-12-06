@@ -4,7 +4,7 @@
 	"app_min_version": "3.2",
 	"version": "1.0.0",
 	"name": "Hide Notebooks",
-	"description": "Right-click notebooks and hide them, show hidden notebooks in 'View' menu. Also can toggle 'All notes' and 'Trash' in 'View' menu.",
+	"description": "Hide notebooks for a cleaner sidebar.",
 	"author": "hyongew",
 	"homepage_url": "",
 	"repository_url": "https://github.com/hyongew/joplin-hide-notebooks",
