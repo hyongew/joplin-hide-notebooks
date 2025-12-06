@@ -1,5 +1,9 @@
-# Joplin Plugin
+# Hide Notebooks
 
-This is your new Joplin plugin. It is suggested that you use this README file to document your plugin.
+This is a plugin for Joplin that allows you to hide notebooks. Simply right-click any notebook and select 'Hide Notebook' to hide it. Go to ```View -> Show hidden notebooks``` to show hidden notebooks.
 
-For information on how to build or publish the plugin, please see [GENERATOR_DOC.md](./GENERATOR_DOC.md)
+You can also hide 'All Notes' and 'Trash' in ```View``` or ```Tools -> Options -> Hide Notebooks```.
+
+# Known Issues
+
+* Hiding or unhiding notebooks will cause all notebooks in the sidebar to flash briefly.
