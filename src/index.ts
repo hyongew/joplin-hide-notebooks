@@ -33,6 +33,44 @@ joplin.plugins.register({
 			},
 		});
 
+		// Intercept note selection to prevent access to hidden notebooks
+		await joplin.workspace.onNoteSelectionChange(async () => {
+			const hiddenIdsArr = await joplin.settings.value('hiddenNotebookIds');
+			let hiddenIds: string[] = [];
+			try { hiddenIds = hiddenIdsArr || []; } catch (e) { hiddenIds = []; }
+			if (!hiddenIds.length) return;
+
+			const currentFolder = await joplin.workspace.selectedFolder();
+
+			try {
+				if (currentFolder && (hiddenIds.includes(currentFolder.id) || hiddenIds.includes(currentFolder.parent_id))) {
+					openUnhiddenNote(hiddenIds);
+				}
+			} catch (e) {
+				console.error(e)
+			}
+		});
+
+		// Also intercept folder selection to prevent selecting hidden folders
+		await joplin.settings.onChange(async (event: any) => {
+			if (event.keys.includes('hiddenNotebookIds')) {
+				// Check if current folder is now hidden
+				const hiddenIdsArr = await joplin.settings.value('hiddenNotebookIds');
+				let hiddenIds: string[] = [];
+				try { hiddenIds = hiddenIdsArr || []; } catch (e) { hiddenIds = []; }
+				if (!hiddenIds.length) return;
+
+				try {
+					const currentFolder = await joplin.workspace.selectedFolder();
+					if (currentFolder && (hiddenIds.includes(currentFolder.id) || hiddenIds.includes(currentFolder.parent_id))) {
+						openUnhiddenNote(hiddenIds);
+					}
+				} catch (e) {
+					console.error(e)
+				}
+			}
+		});
+
 		// CSS Generation
 		const updateCss = async () => {
 			const hideNotebooksSettings = await joplin.settings.values(['hiddenNotebookIds', 'showAllNotes', 'showTrash']);
@@ -80,6 +118,27 @@ joplin.plugins.register({
 			await fs.writeFile(cssFilePath, css);
 			await joplin.window.loadChromeCssFile(cssFilePath);
 		};
+
+		const openUnhiddenNote = async (hiddenIds: string[]) => {
+			let safeNoteId = null;
+					
+			const notes = await joplin.data.get(['notes'], {
+				fields: ['id', 'parent_id'],
+				order_by: 'title',
+				order_dir: 'ASC'
+			});
+
+			for (const n of notes.items) {
+				if (!hiddenIds.includes(n.parent_id)) {
+					safeNoteId = n.id;
+					break;
+				}
+			}
+			
+			if (safeNoteId) {
+				await joplin.commands.execute('openNote', safeNoteId);
+			}
+		}
 
 		// Initial CSS load
 		await updateCss();
