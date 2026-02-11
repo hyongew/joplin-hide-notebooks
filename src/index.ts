@@ -156,6 +156,15 @@ joplin.plugins.register({
 
 				if (!hiddenIds.includes(folderId)) {
 					hiddenIds.push(folderId);
+					
+					// Also hide sub noteboooks
+					const folders = await joplin.data.get(['folders'], { fields: ['id', 'parent_id'] });
+					folders.items.forEach(folder => {
+						if (hiddenIds.includes(folder.parent_id)) {
+							hiddenIds.push(folder.id)
+						}
+					});
+
 					await joplin.settings.setValue('hiddenNotebookIds', hiddenIds);
 					await updateCss();
 				}
