@@ -6,6 +6,7 @@ You can also hide 'All Notes' and 'Trash' in ```View``` or ```Tools -> Options -
 
 # Known Issues
 
+* 'All notes' and 'Trash' can still be accessed with keyboard keys.
+* Hidden notes still visible in 'All notes'.
 * Hiding or unhiding notebooks will cause all notebooks in the sidebar to flash briefly.
-* When all notebooks are hidden, the last hidden notebook will have its notes still be shown.
-* when trash is hidden, deleted notes are still accessible with keyboard inputs and deleted notebooks are still shown.
+* When 'Trash' is hidden, deleted notes are still accessible with keyboard inputs and deleted notebooks are still shown.

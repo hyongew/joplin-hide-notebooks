@@ -66,7 +66,7 @@ joplin.plugins.register({
 						openUnhiddenNote(hiddenIds);
 					}
 				} catch (e) {
-					console.error(e)
+					console.error(e);
 				}
 			}
 		});
@@ -154,16 +154,37 @@ joplin.plugins.register({
 				let hiddenIds: string[] = [];
 				try { hiddenIds = hiddenIdsArr || []; } catch (e) { hiddenIds = []; }
 
-				if (!hiddenIds.includes(folderId)) {
+				const folders = await joplin.data.get(['folders'], { fields: ['id', 'parent_id'] });
+				let unhiddenFolderCount = folders?.items?.length ?? 0;
+
+				try {
+					folders.items.forEach(folder => {
+						if (hiddenIds.includes(folder.id) ||
+								hiddenIds.includes(folder.parent_id) ||
+								folder.id==folderId ||
+								folder.parent_id==folderId) {
+							unhiddenFolderCount--;
+						}
+					});
+				} catch (e) {
+					console.error(e);
+				}
+
+				if (!unhiddenFolderCount) {
+					await joplin.views.dialogs.showMessageBox("Last notebook can't be hidden!");
+				} else if (!hiddenIds.includes(folderId)) {
 					hiddenIds.push(folderId);
 					
 					// Also hide sub noteboooks
-					const folders = await joplin.data.get(['folders'], { fields: ['id', 'parent_id'] });
-					folders.items.forEach(folder => {
-						if (hiddenIds.includes(folder.parent_id)) {
-							hiddenIds.push(folder.id)
-						}
-					});
+					try {
+						folders.items.forEach(folder => {
+							if (hiddenIds.includes(folder.parent_id)) {
+								hiddenIds.push(folder.id)
+							}
+						});
+					} catch (e) {
+						console.error(e);
+					}
 
 					await joplin.settings.setValue('hiddenNotebookIds', hiddenIds);
 					await updateCss();
