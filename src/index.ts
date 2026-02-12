@@ -112,6 +112,14 @@ joplin.plugins.register({
 				`;
 			}
 
+			if (!showTrash) {
+				css += `
+					.list-item-wrapper[data-id="${trashFolderId}"] ~ * {
+						display: none !important
+					}
+				`;
+			}
+
 			const fs = joplin.require('fs-extra');
 			const dataDir = await joplin.plugins.dataDir();
 			const cssFilePath = `${dataDir}/generated.css`;
@@ -197,8 +205,9 @@ joplin.plugins.register({
 			label: 'Show hidden notebooks',
 			execute: async () => {
 				const result = await joplin.views.dialogs.showMessageBox('Are you sure you want to unhide all hidden notebooks?');
+				const showTrash = await joplin.settings.value('showTrash');
 				if (result === 0) {
-					await joplin.settings.setValue('hiddenNotebookIds', []);
+					await joplin.settings.setValue('hiddenNotebookIds', showTrash ? [] : [trashFolderId]);
 					await updateCss();
 				}
 			}
