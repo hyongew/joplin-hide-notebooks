@@ -2,7 +2,7 @@
 	"manifest_version": 1,
 	"id": "joplin.hyongew.hide-notebooks",
 	"app_min_version": "3.2",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"name": "Hide Notebooks",
 	"description": "Hide notebooks for a cleaner sidebar.",
 	"author": "hyongew",
