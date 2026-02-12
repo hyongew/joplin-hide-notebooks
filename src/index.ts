@@ -1,6 +1,8 @@
 import joplin from 'api';
 import { MenuItemLocation } from 'api/types';
 
+const trashFolderId = "de1e7ede1e7ede1e7ede1e7ede1e7ede";
+
 joplin.plugins.register({
 	onStart: async function () {
 		// Settings
@@ -43,7 +45,10 @@ joplin.plugins.register({
 			const currentFolder = await joplin.workspace.selectedFolder();
 
 			try {
-				if (currentFolder && (hiddenIds.includes(currentFolder.id) || hiddenIds.includes(currentFolder.parent_id))) {
+				if (currentFolder && (hiddenIds.includes(currentFolder.id) ||
+					  hiddenIds.includes(currentFolder.parent_id) ||
+					  currentFolder.id == trashFolderId ||
+					  currentFolder.parent_id == trashFolderId)) {
 					openUnhiddenNote(hiddenIds);
 				}
 			} catch (e) {
@@ -62,7 +67,10 @@ joplin.plugins.register({
 
 				try {
 					const currentFolder = await joplin.workspace.selectedFolder();
-					if (currentFolder && (hiddenIds.includes(currentFolder.id) || hiddenIds.includes(currentFolder.parent_id))) {
+					if (currentFolder && (hiddenIds.includes(currentFolder.id) ||
+							hiddenIds.includes(currentFolder.parent_id) ||
+					  	currentFolder.id == trashFolderId ||
+					  	currentFolder.parent_id == trashFolderId)) {
 						openUnhiddenNote(hiddenIds);
 					}
 				} catch (e) {
@@ -99,14 +107,6 @@ joplin.plugins.register({
 			if (!showAllNotes) {
 				css += `
 					.all-notes {
-						display: none !important;
-					}
-				`;
-			}
-
-			if (!showTrash) {
-				css += `
-					.list-item-wrapper[data-id="de1e7ede1e7ede1e7ede1e7ede1e7ede"] {
 						display: none !important;
 					}
 				`;
@@ -219,7 +219,18 @@ joplin.plugins.register({
 			label: 'Toggle "Trash"',
 			execute: async () => {
 				const current = await joplin.settings.value('showTrash');
+				const hiddenIdsArr = await joplin.settings.value('hiddenNotebookIds');
+				let hiddenIds: string[] = [];
+				try { hiddenIds = hiddenIdsArr || []; } catch (e) { hiddenIds = []; }
+
+				if (current) {
+					hiddenIds.push(trashFolderId);
+				} else {
+					hiddenIds = hiddenIds.filter(folderId => folderId!=trashFolderId);
+				}
+
 				await joplin.settings.setValue('showTrash', !current);
+				await joplin.settings.setValue('hiddenNotebookIds', hiddenIds);
 				await updateCss();
 			}
 		});
