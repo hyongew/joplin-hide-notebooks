@@ -1,7 +1,7 @@
 import joplin from 'api';
 import { MenuItemLocation } from 'api/types';
 
-const trashFolderId = "de1e7ede1e7ede1e7ede1e7ede1e7ede";
+const trashFolderId = 'de1e7ede1e7ede1e7ede1e7ede1e7ede';
 
 joplin.plugins.register({
 	onStart: async function () {
@@ -12,21 +12,21 @@ joplin.plugins.register({
 		});
 
 		await joplin.settings.registerSettings({
-			'hiddenNotebookIds': {
+			hiddenNotebookIds: {
 				value: [],
 				type: 4, // Array
 				public: false,
 				section: 'hideNotebooksSection',
 				label: 'Hidden Notebook IDs',
 			},
-			'showAllNotes': {
+			showAllNotes: {
 				value: true,
 				type: 3, // Boolean
 				public: true,
 				section: 'hideNotebooksSection',
 				label: 'Show "All notes" in sidebar',
 			},
-			'showTrash': {
+			showTrash: {
 				value: true,
 				type: 3, // Boolean
 				public: true,
@@ -39,20 +39,27 @@ joplin.plugins.register({
 		await joplin.workspace.onNoteSelectionChange(async () => {
 			const hiddenIdsArr = await joplin.settings.value('hiddenNotebookIds');
 			let hiddenIds: string[] = [];
-			try { hiddenIds = hiddenIdsArr || []; } catch (e) { hiddenIds = []; }
+			try {
+				hiddenIds = hiddenIdsArr || [];
+			} catch (e) {
+				hiddenIds = [];
+			}
 			if (!hiddenIds.length) return;
 
 			const currentFolder = await joplin.workspace.selectedFolder();
 
 			try {
-				if (currentFolder && (hiddenIds.includes(currentFolder.id) ||
-					  hiddenIds.includes(currentFolder.parent_id) ||
-					  currentFolder.id == trashFolderId ||
-					  currentFolder.parent_id == trashFolderId)) {
+				if (
+					currentFolder &&
+					(hiddenIds.includes(currentFolder.id) ||
+						hiddenIds.includes(currentFolder.parent_id) ||
+						currentFolder.id == trashFolderId ||
+						currentFolder.parent_id == trashFolderId)
+				) {
 					openUnhiddenNote(hiddenIds);
 				}
 			} catch (e) {
-				console.error(e)
+				console.error(e);
 			}
 		});
 
@@ -62,15 +69,22 @@ joplin.plugins.register({
 				// Check if current folder is now hidden
 				const hiddenIdsArr = await joplin.settings.value('hiddenNotebookIds');
 				let hiddenIds: string[] = [];
-				try { hiddenIds = hiddenIdsArr || []; } catch (e) { hiddenIds = []; }
+				try {
+					hiddenIds = hiddenIdsArr || [];
+				} catch (e) {
+					hiddenIds = [];
+				}
 				if (!hiddenIds.length) return;
 
 				try {
 					const currentFolder = await joplin.workspace.selectedFolder();
-					if (currentFolder && (hiddenIds.includes(currentFolder.id) ||
+					if (
+						currentFolder &&
+						(hiddenIds.includes(currentFolder.id) ||
 							hiddenIds.includes(currentFolder.parent_id) ||
-					  	currentFolder.id == trashFolderId ||
-					  	currentFolder.parent_id == trashFolderId)) {
+							currentFolder.id == trashFolderId ||
+							currentFolder.parent_id == trashFolderId)
+					) {
 						openUnhiddenNote(hiddenIds);
 					}
 				} catch (e) {
@@ -81,7 +95,11 @@ joplin.plugins.register({
 
 		// CSS Generation
 		const updateCss = async () => {
-			const hideNotebooksSettings = await joplin.settings.values(['hiddenNotebookIds', 'showAllNotes', 'showTrash']);
+			const hideNotebooksSettings = await joplin.settings.values([
+				'hiddenNotebookIds',
+				'showAllNotes',
+				'showTrash',
+			]);
 			let hiddenIds: string[] = [];
 			try {
 				hiddenIds = hideNotebooksSettings.hiddenNotebookIds as string[];
@@ -129,11 +147,11 @@ joplin.plugins.register({
 
 		const openUnhiddenNote = async (hiddenIds: string[]) => {
 			let safeNoteId = null;
-					
+
 			const notes = await joplin.data.get(['notes'], {
 				fields: ['id', 'parent_id'],
 				order_by: 'title',
-				order_dir: 'ASC'
+				order_dir: 'ASC',
 			});
 
 			for (const n of notes.items) {
@@ -142,11 +160,11 @@ joplin.plugins.register({
 					break;
 				}
 			}
-			
+
 			if (safeNoteId) {
 				await joplin.commands.execute('openNote', safeNoteId);
 			}
-		}
+		};
 
 		// Initial CSS load
 		await updateCss();
@@ -160,17 +178,25 @@ joplin.plugins.register({
 
 				const hiddenIdsArr = await joplin.settings.value('hiddenNotebookIds');
 				let hiddenIds: string[] = [];
-				try { hiddenIds = hiddenIdsArr || []; } catch (e) { hiddenIds = []; }
+				try {
+					hiddenIds = hiddenIdsArr || [];
+				} catch (e) {
+					hiddenIds = [];
+				}
 
-				const folders = await joplin.data.get(['folders'], { fields: ['id', 'parent_id'] });
+				const folders = await joplin.data.get(['folders'], {
+					fields: ['id', 'parent_id'],
+				});
 				let unhiddenFolderCount = folders?.items?.length ?? 0;
 
 				try {
-					folders.items.forEach(folder => {
-						if (hiddenIds.includes(folder.id) ||
-								hiddenIds.includes(folder.parent_id) ||
-								folder.id==folderId ||
-								folder.parent_id==folderId) {
+					folders.items.forEach((folder) => {
+						if (
+							hiddenIds.includes(folder.id) ||
+							hiddenIds.includes(folder.parent_id) ||
+							folder.id == folderId ||
+							folder.parent_id == folderId
+						) {
 							unhiddenFolderCount--;
 						}
 					});
@@ -179,15 +205,17 @@ joplin.plugins.register({
 				}
 
 				if (!unhiddenFolderCount) {
-					await joplin.views.dialogs.showMessageBox("Last notebook can't be hidden!");
+					await joplin.views.dialogs.showMessageBox(
+						"Last notebook can't be hidden!",
+					);
 				} else if (!hiddenIds.includes(folderId)) {
 					hiddenIds.push(folderId);
-					
+
 					// Also hide sub noteboooks
 					try {
-						folders.items.forEach(folder => {
+						folders.items.forEach((folder) => {
 							if (hiddenIds.includes(folder.parent_id)) {
-								hiddenIds.push(folder.id)
+								hiddenIds.push(folder.id);
 							}
 						});
 					} catch (e) {
@@ -204,13 +232,18 @@ joplin.plugins.register({
 			name: 'showHiddenNotebooks',
 			label: 'Show hidden notebooks',
 			execute: async () => {
-				const result = await joplin.views.dialogs.showMessageBox('Are you sure you want to unhide all hidden notebooks?');
+				const result = await joplin.views.dialogs.showMessageBox(
+					"Are you sure you want to unhide all hidden notebooks?",
+				);
 				const showTrash = await joplin.settings.value('showTrash');
 				if (result === 0) {
-					await joplin.settings.setValue('hiddenNotebookIds', showTrash ? [] : [trashFolderId]);
+					await joplin.settings.setValue(
+						'hiddenNotebookIds',
+						showTrash ? [] : [trashFolderId],
+					);
 					await updateCss();
 				}
-			}
+			},
 		});
 
 		await joplin.commands.register({
@@ -220,7 +253,7 @@ joplin.plugins.register({
 				const current = await joplin.settings.value('showAllNotes');
 				await joplin.settings.setValue('showAllNotes', !current);
 				await updateCss();
-			}
+			},
 		});
 
 		await joplin.commands.register({
@@ -230,29 +263,53 @@ joplin.plugins.register({
 				const current = await joplin.settings.value('showTrash');
 				const hiddenIdsArr = await joplin.settings.value('hiddenNotebookIds');
 				let hiddenIds: string[] = [];
-				try { hiddenIds = hiddenIdsArr || []; } catch (e) { hiddenIds = []; }
+				try {
+					hiddenIds = hiddenIdsArr || [];
+				} catch (e) {
+					hiddenIds = [];
+				}
 
 				if (current) {
 					hiddenIds.push(trashFolderId);
 				} else {
-					hiddenIds = hiddenIds.filter(folderId => folderId!=trashFolderId);
+					hiddenIds = hiddenIds.filter((folderId) => folderId != trashFolderId);
 				}
 
 				await joplin.settings.setValue('showTrash', !current);
 				await joplin.settings.setValue('hiddenNotebookIds', hiddenIds);
 				await updateCss();
-			}
+			},
 		});
 
 		// Register Menu Items
-		await joplin.views.menuItems.create('hideNotebookItem', 'hideNotebook', MenuItemLocation.FolderContextMenu);
-		await joplin.views.menuItems.create('toggleAllNotesItem', 'toggleAllNotes', MenuItemLocation.View);
-		await joplin.views.menuItems.create('toggleTrashItem', 'toggleTrash', MenuItemLocation.View);
-		await joplin.views.menuItems.create('showHiddenNotebooksItem', 'showHiddenNotebooks', MenuItemLocation.View);
+		await joplin.views.menuItems.create(
+			'hideNotebookItem',
+			'hideNotebook',
+			MenuItemLocation.FolderContextMenu,
+		);
+		await joplin.views.menuItems.create(
+			'toggleAllNotesItem',
+			'toggleAllNotes',
+			MenuItemLocation.View,
+		);
+		await joplin.views.menuItems.create(
+			'toggleTrashItem',
+			'toggleTrash',
+			MenuItemLocation.View,
+		);
+		await joplin.views.menuItems.create(
+			'showHiddenNotebooksItem',
+			'showHiddenNotebooks',
+			MenuItemLocation.View,
+		);
 
 		// Listen for setting changes
 		await joplin.settings.onChange(async (event: any) => {
-			if (event.keys.includes('hiddenNotebookIds') || event.keys.includes('showAllNotes') || event.keys.includes('showTrash')) {
+			if (
+				event.keys.includes('hiddenNotebookIds') ||
+				event.keys.includes('showAllNotes') ||
+				event.keys.includes('showTrash')
+			) {
 				await updateCss();
 			}
 		});
